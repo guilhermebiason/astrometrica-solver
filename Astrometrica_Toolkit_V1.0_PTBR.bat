@@ -273,7 +273,7 @@ echo Windows 10+
 echo Astrometrica instalado em C:\Astrometrica;
 echo Execute como administrador se a criacao de pastas falhar.
 echo.
-echo %title%Cerroritos%color%
+echo %title%Creditos%color%
 echo.
 echo Dev: G. Biason
 echo mail: guilhermebiason@usp.br
