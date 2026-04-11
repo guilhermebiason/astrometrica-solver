@@ -5,3 +5,8 @@ Acesse "Iniciar" (tecla Windows), pesquise por "Powershell", cole o comando:
 irm https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/install.ps1 | iex
 ```
 Escolha as opções para correção de erros, em seguida aperte [4] para executar Astrometrica.exe.
+
+**Para erro de SSL/TLS**, use:
+```powershell
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/install.ps1 | iex
+```
