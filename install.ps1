@@ -1,6 +1,3 @@
-# Astrometrica Toolkit - Bootstrap
-# Uso: irm https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/install.ps1 | iex
-
 $url  = "https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/Astrometrica_Toolkit_Ver1.2.ps1"
 $dest = Join-Path $env:TEMP "Astrometrica_Toolkit_Ver1.2.ps1"
 
