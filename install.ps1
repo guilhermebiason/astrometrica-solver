@@ -1,20 +1,20 @@
-$url  = "https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/Astrometrica_Toolkit_Ver1.2.ps1"
-$dest = Join-Path $env:TEMP "Astrometrica_Toolkit_Ver1.2.ps1"
+$url  = "https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/Astrometrica_Toolkit.ps1"
+$dest = Join-Path $env:TEMP "Astrometrica_Toolkit.ps1"
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host ""
-Write-Host "[Astrometrica Toolkit] Baixando..." -ForegroundColor Cyan
+Write-Host "[Astrometrica Toolkit] downloading..." -ForegroundColor Cyan
 
 try {
     Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing -ErrorAction Stop
-    Write-Host "[Astrometrica Toolkit] Download concluido." -ForegroundColor Green
+    Write-Host "[Astrometrica Toolkit] download complete." -ForegroundColor Green
 } catch {
-    Write-Host "[ERRO] Falha ao baixar o arquivo: $_" -ForegroundColor Red
+    Write-Host "[ERROR] Falha ao baixar o arquivo: $_" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "[Astrometrica Toolkit] Iniciando..." -ForegroundColor Cyan
+Write-Host "[Astrometrica Toolkit] starting..." -ForegroundColor Cyan
 Write-Host ""
 
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
