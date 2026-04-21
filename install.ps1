@@ -1,8 +1,10 @@
 # Astrometrica Toolkit - Bootstrap
 # Uso: irm https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/install.ps1 | iex
 
-$url  = "https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/Astrometrica_Toolkit_V1.0_PTBR.bat"
-$dest = Join-Path $env:TEMP "Astrometrica_Toolkit.bat"
+$url  = "https://raw.githubusercontent.com/guilhermebiason/astrometrica-solver/main/Astrometrica_Toolkit.ps1"
+$dest = Join-Path $env:TEMP "Astrometrica_Toolkit.ps1"
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host ""
 Write-Host "[Astrometrica Toolkit] Baixando..." -ForegroundColor Cyan
@@ -21,10 +23,10 @@ Write-Host ""
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 if ($isAdmin) {
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$dest`"" -Wait
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"$dest`"" -Wait
 } else {
     Write-Host "[Astrometrica Toolkit] Solicitando permissao de administrador..." -ForegroundColor Yellow
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/c `"$dest`"" -Verb RunAs -Wait
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"$dest`"" -Verb RunAs -Wait
 }
 
 Remove-Item $dest -Force -ErrorAction SilentlyContinue
