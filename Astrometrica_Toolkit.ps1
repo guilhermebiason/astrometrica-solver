@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+#Astrometrica Toolkit Vers. 1.2
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
