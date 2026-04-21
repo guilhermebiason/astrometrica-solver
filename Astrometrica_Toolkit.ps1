@@ -17,9 +17,12 @@ $ErrorActionPreference = "Stop"
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-$LOCAL_DIR = "$env:LOCALAPPDATA\Astrometrica"
-$DATA_DIR  = "C:\Astrometrica\Data"
-$EXE_PATH  = "C:\Astrometrica\Astrometrica.exe"
+$LOCAL_DIR    = "$env:LOCALAPPDATA\Astrometrica"
+$DATA_DIR     = "C:\Astrometrica\Data"
+$CATALOG_DIR  = "C:\Astrometrica\Catalogs"
+$EXE_PATH     = "C:\Astrometrica\Astrometrica.exe"
+$MPCORB_URL   = "https://minorplanetcenter.net/iau/MPCORB/MPCORB.DAT"
+$MPCORB_DEST  = "$CATALOG_DIR\MPCORB.DAT"
 
 # ---------------------------------------------------------------------------
 # Helpers de output colorido
@@ -71,6 +74,7 @@ function Show-Menu {
     Write-Host "  [5]" -ForegroundColor Yellow -NoNewline; Write-Host " Verificar Status"
     Write-Host "  [6]" -ForegroundColor Yellow -NoNewline; Write-Host " LEIA-ME"
     Write-Host "  [7]" -ForegroundColor Yellow -NoNewline; Write-Host " Sair"
+    Write-Host "  [8]" -ForegroundColor Cyan   -NoNewline; Write-Host " Baixar catalogo MPC Orbit (MPCORB.DAT)"
     Write-Host ""
 }
 
@@ -346,6 +350,85 @@ function Show-Readme {
 }
 
 # ---------------------------------------------------------------------------
+# [8] Baixar MPCORB.DAT
+# ---------------------------------------------------------------------------
+function Download-MPCOrb {
+    Clear-Host
+    Write-Host "[Download MPC Orbit - MPCORB.DAT]" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Fonte: $MPCORB_URL" -ForegroundColor DarkGray
+    Write-Host "Destino: $MPCORB_DEST" -ForegroundColor DarkGray
+    Write-Host ""
+
+    # Cria a pasta de catalogos se nao existir
+    if (-not (Test-Path $CATALOG_DIR)) {
+        try {
+            New-Item -ItemType Directory -Path $CATALOG_DIR -Force | Out-Null
+            Write-Check "Pasta criada: `"$CATALOG_DIR`""
+        } catch {
+            Write-Err "Falha ao criar pasta de catalogos: $_"
+            Write-Warn "Tente executar o toolkit como Administrador."
+            Pause-Return
+            return
+        }
+    } else {
+        Write-Ok "Pasta de catalogos encontrada: `"$CATALOG_DIR`""
+    }
+
+    # Avisa se ja existe um arquivo anterior
+    if (Test-Path $MPCORB_DEST) {
+        $existing = Get-Item $MPCORB_DEST
+        Write-Warn "MPCORB.DAT ja existe (modificado em: $($existing.LastWriteTime.ToString('dd/MM/yyyy HH:mm')))"
+        if (-not (Confirm-Action "Deseja substituir o arquivo existente?")) {
+            Write-Host "Operacao cancelada." -ForegroundColor DarkGray
+            Pause-Return
+            return
+        }
+    }
+
+    Write-Host ""
+    Write-Host "Iniciando download..." -ForegroundColor Yellow
+    Write-Host "Atencao: o arquivo tem aproximadamente 90MB. Isso pode levar alguns minutos." -ForegroundColor DarkGray
+    Write-Host ""
+
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+        $webClient = New-Object System.Net.WebClient
+        $webClient.Headers.Add("User-Agent", "Astrometrica-Toolkit/2.0")
+
+        # Progresso via evento DownloadProgressChanged
+        $progressJob = Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -Action {
+            $pct = $Event.SourceEventArgs.ProgressPercentage
+            $recv = [math]::Round($Event.SourceEventArgs.BytesReceived / 1MB, 1)
+            $total = [math]::Round($Event.SourceEventArgs.TotalBytesToReceive / 1MB, 1)
+            Write-Progress -Activity "Baixando MPCORB.DAT" -Status "$recv MB / $total MB" -PercentComplete $pct
+        }
+
+        $webClient.DownloadFile($MPCORB_URL, $MPCORB_DEST)
+
+        Unregister-Event -SourceIdentifier $progressJob.Name -ErrorAction SilentlyContinue
+        Write-Progress -Activity "Baixando MPCORB.DAT" -Completed
+
+        $size = [math]::Round((Get-Item $MPCORB_DEST).Length / 1MB, 1)
+        Write-Host ""
+        Write-Ok "MPCORB.DAT baixado com sucesso! ($size MB)"
+        Write-Check "Salvo em: `"$MPCORB_DEST`""
+    } catch {
+        Write-Progress -Activity "Baixando MPCORB.DAT" -Completed
+        Write-Host ""
+        Write-Err "Falha no download: $_"
+        Write-Warn "Verifique sua conexao com a internet e tente novamente."
+        # Remove arquivo incompleto se existir
+        if (Test-Path $MPCORB_DEST) {
+            Remove-Item $MPCORB_DEST -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    Pause-Return
+}
+
+# ---------------------------------------------------------------------------
 # Loop principal
 # ---------------------------------------------------------------------------
 while ($true) {
@@ -366,8 +449,9 @@ while ($true) {
             $confirm = Read-Host "Voce quer sair? [S/N]"
             if ($confirm -match "^[Ss]$") { exit }
         }
+        "8" { Download-MPCOrb }
         default {
-            Write-Warn "Opcao invalida. Escolha entre 1 e 7."
+            Write-Warn "Opcao invalida. Escolha entre 1 e 8."
             Start-Sleep -Seconds 1
         }
     }
